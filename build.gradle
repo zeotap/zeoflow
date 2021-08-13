@@ -1,0 +1,48 @@
+plugins {
+    id 'scala'
+    id 'java-library'
+}
+
+repositories {
+    jcenter()
+    mavenLocal()
+    maven {
+        url "https://zeotap.jfrog.io/zeotap/libs-release"
+        credentials {
+            username "$artifactory_user"
+            password "$artifactory_password"
+        }
+    }
+    maven {
+        url "https://zeotap.jfrog.io/zeotap/libs-snapshot"
+        credentials {
+            username "$artifactory_user"
+            password "$artifactory_password"
+        }
+    }
+}
+
+dependencies {
+
+    implementation "com.google.cloud.spark:spark-bigquery-with-dependencies_2.11:0.21.1"
+    implementation "com.holdenkarau:spark-testing-base_2.11:2.4.3_0.12.0"
+    implementation "com.zeotap:cloud-storage-utils:1.0.0"
+    implementation "com.zeotap:data-io_2.11:1.0-SNAPSHOT"
+    implementation "mysql:mysql-connector-java:8.0.26"
+    implementation "org.apache.commons:commons-text:1.6"
+    implementation "org.apache.spark:spark-avro_2.11:2.4.3"
+    implementation "org.apache.spark:spark-core_2.11:2.4.3"
+    implementation "org.apache.spark:spark-hive_2.11:2.4.3"
+    implementation "org.apache.spark:spark-sql_2.11:2.4.3"
+    implementation "org.postgresql:postgresql:42.2.11"
+    implementation "org.typelevel:cats-core_2.11:2.0.0"
+    implementation "org.typelevel:cats-free_2.11:2.0.0"
+    implementation 'org.scala-lang:scala-library:2.11.12'
+
+    testImplementation 'junit:junit:4.12'
+    testImplementation "org.mockito:mockito-core:2.8.9"
+    testImplementation 'org.scalatest:scalatest_2.11:3.0.1'
+    testImplementation "org.testcontainers:mysql:1.16.0"
+    testImplementation "org.testcontainers:postgresql:1.16.0"
+
+}
