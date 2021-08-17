@@ -1,10 +1,10 @@
 package com.zeotap.zeoflow.constructs
 
-import com.zeotap.zeoflow.dsl.FlowDSLHelper.DSLF
+import com.zeotap.zeoflow.dsl.FlowDSLHelper.FreeFlowDSL
 
 object DSLOps {
 
-  def featuresCompiler[A](features: Seq[DSLF[A]]): DSLF[A] =
+  def featuresCompiler[A](features: Seq[FreeFlowDSL[A]]): FreeFlowDSL[A] =
     features.reduce((a, b) => for {
       _ <- a
       v2 <- b

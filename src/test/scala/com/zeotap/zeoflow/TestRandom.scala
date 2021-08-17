@@ -3,9 +3,9 @@ package com.zeotap.zeoflow
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import com.zeotap.zeoflow.constructs.DSLOps.featuresCompiler
 import com.zeotap.zeoflow.dsl.FlowDSLHelper
-import com.zeotap.zeoflow.dsl.FlowDSLHelper.DSLF
-import com.zeotap.zeoflow.interpreters.SparkInterpreters.{SparkProcessor, sparkInterpreter}
-import com.zeotap.zeoflow.types.Query
+import com.zeotap.zeoflow.dsl.FlowDSLHelper.FreeFlowDSL
+import com.zeotap.zeoflow.interpreters.SparkInterpreters.{SparkDataFrames, SparkProcessor, sparkInterpreter}
+import com.zeotap.zeoflow.types.{CustomProcessor, Query}
 import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.scalatest.FunSuite
@@ -49,10 +49,11 @@ class TestRandom extends FunSuite with DataFrameSuiteBase {
       Query("select Common_DataPartnerID, Demographic_Country, Common_TS from dataFrame2", "dataFrame4")
     )
 
-    val dslSeq: Seq[DSLF[List[DataFrame]]] = Seq(FlowDSLHelper.runSQLQueries(queries))
+    val dslSeq: Seq[FreeFlowDSL[Unit]] = Seq(FlowDSLHelper.runSQLQueries(queries), FlowDSLHelper.runUserDefinedProcessor(new CustomProcessor()(spark), List("dataFrame2", "dataFrame3"), List("dataFrame5", "dataFrame6")))
 
-    val dataFrames = featuresCompiler(dslSeq).foldMap[SparkProcessor](sparkInterpreter).run(spark)
-    dataFrames.foreach(df => {
+    featuresCompiler(dslSeq).foldMap[SparkProcessor](sparkInterpreter).run(spark)
+    List("dataFrame5", "dataFrame6").foreach(tableName => {
+      val df = spark.table(tableName)
       df.printSchema()
       df.show(false)
     })

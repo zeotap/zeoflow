@@ -4,6 +4,4 @@ import com.zeotap.source.spark.loader.FSSparkLoader
 import com.zeotap.zeoflow.dsl.SourceBuilder
 import org.apache.spark.sql.DataFrame
 
-case class SparkProdDataSource(s: FSSparkLoader) extends SourceBuilder[DataFrame] {
-  override def build(): String = ???
-}
+case class SparkProdDataSource(s: FSSparkLoader) extends SourceBuilder[DataFrame]

@@ -2,13 +2,15 @@ package com.zeotap.zeoflow.dsl
 
 import cats.free.Free
 import cats.free.Free.liftF
-import com.zeotap.zeoflow.dsl.FlowDSL.RunSQLQueries
-import com.zeotap.zeoflow.types.Query
+import com.zeotap.zeoflow.dsl.FlowDSL.{RunSQLQueries, RunUserDefinedProcessor}
+import com.zeotap.zeoflow.types.{Processor, Query}
 
 object FlowDSLHelper {
 
-  type DSLF[A] = Free[FlowDSL, A]
+  type FreeFlowDSL[A] = Free[FlowDSL, A]
 
-  def runSQLQueries[A](queries: List[Query]): DSLF[A] = liftF(RunSQLQueries(queries))
+  def runSQLQueries[A](queries: List[Query]): FreeFlowDSL[A] = liftF(RunSQLQueries(queries))
+
+  def runUserDefinedProcessor[A](processor: Processor, inputTableNames: List[String], outputTableNames: List[String]): FreeFlowDSL[A] = liftF(RunUserDefinedProcessor(processor, inputTableNames, outputTableNames))
 
 }
