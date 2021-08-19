@@ -9,8 +9,8 @@ class CustomProcessor(implicit spark: SparkSession) extends SparkProcessor {
     val df1 = spark.table(inputTableNames(0))
     val df2 = spark.table(inputTableNames(1))
 
-    df1.withColumn("dummy", lit(null)).createOrReplaceTempView(outputTableNames(0))
-    df2.withColumn("random", lit(null)).createOrReplaceTempView(outputTableNames(1))
+    df1.withColumn("dummy", lit(null).cast("string")).createOrReplaceTempView(outputTableNames(0))
+    df2.withColumn("random", lit(null).cast("string")).createOrReplaceTempView(outputTableNames(1))
   }
 
 }

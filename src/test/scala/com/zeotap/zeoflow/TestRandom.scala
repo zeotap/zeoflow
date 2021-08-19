@@ -1,12 +1,17 @@
 package com.zeotap.zeoflow
 
+import java.io.File
+
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import com.zeotap.sink.spark.writer.SparkWriter
 import com.zeotap.source.spark.loader.SparkLoader
 import com.zeotap.zeoflow.constructs.SparkOps
 import com.zeotap.zeoflow.dsl.{SourceBuilder, SparkSinkBuilder, SparkSourceBuilder}
-import com.zeotap.zeoflow.types.{CustomProcessor, Query}
+import com.zeotap.zeoflow.types._
+import org.apache.commons.io.FileUtils
 import org.apache.spark.sql.Row
+import org.apache.spark.sql.expressions.UserDefinedFunction
+import org.apache.spark.sql.functions.udf
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
 import org.scalatest.FunSuite
 
@@ -18,6 +23,8 @@ class TestRandom extends FunSuite with DataFrameSuiteBase {
 
   override def afterAll(): Unit = {
     super.afterAll()
+    FileUtils.deleteQuietly(new File("src/test/resources/custom-input-format"))
+    FileUtils.deleteQuietly(new File("src/test/resources/custom-output-format"))
   }
 
   test("queries") {
@@ -44,24 +51,35 @@ class TestRandom extends FunSuite with DataFrameSuiteBase {
       SparkSourceBuilder(SparkLoader.avro.load("src/test/resources/custom-input-format/yr=2021/mon=08/dt=19"), "dataFrame")(spark)
     )
 
-    val queries: List[Query] = List(
-      Query("select *, 'abc' as new_col from dataFrame", "dataFrame2"),
-      Query("select DeviceId, new_col from dataFrame2", "dataFrame3"),
-      Query("select Common_DataPartnerID, Demographic_Country, Common_TS from dataFrame2", "dataFrame4")
+    val dummyUDF: UserDefinedFunction = udf((column: String) => s"$column ABC")
+    val sumUDF: UserDefinedFunction = udf((column1: String, column2: String) => s"$column1|$column2")
+
+    val udfs: List[UDF] = List(
+      UDF(dummyUDF, "dummyFunc"),
+      UDF(sumUDF, "sumFunc")
     )
 
-    val processor = new CustomProcessor()(spark)
-    val inputTableNames = List("dataFrame2", "dataFrame3")
-    val outputTableNames = List("dataFrame5", "dataFrame6")
+    val transformations: List[Transformation] = List(
+      QueryTransformation("select *, 'abc' as newCol from dataFrame", "dataFrame2"),
+      QueryTransformation("select DeviceId, newCol from dataFrame2", "dataFrame3"),
+      QueryTransformation("select Common_DataPartnerID, Demographic_Country, Common_TS from dataFrame2", "dataFrame4"),
+      ProcessorTransformation(new CustomProcessor()(spark), List("dataFrame2", "dataFrame3"), List("dataFrame5", "dataFrame6")),
+      QueryTransformation("select *, dummyFunc(newCol) as newCol2, sumFunc(newCol, random) as newCol3 from dataFrame6", "dataFrame7")
+    )
 
     val sinks = List(
       SparkSinkBuilder(SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1"), "dataFrame5")(spark),
-      SparkSinkBuilder(SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2"), "dataFrame6")(spark)
+      SparkSinkBuilder(SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2"), "dataFrame6")(spark),
+      SparkSinkBuilder(SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path3"), "dataFrame7")(spark)
     )
 
-    SparkOps.preprocessProgram(sources, queries, processor, inputTableNames, outputTableNames, sinks).run(spark)
+    SparkOps.preprocessProgram(sources, udfs, transformations, sinks).run(spark)
 
-    List("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1", "src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2").foreach(path => {
+    List(
+      "src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1",
+      "src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2",
+      "src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path3"
+    ).foreach(path => {
       val df = spark.read.format("avro").load(path)
       df.printSchema()
       df.show(false)

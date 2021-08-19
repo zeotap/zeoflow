@@ -11,6 +11,6 @@ trait SinkBuilder {
 
 case class SparkSinkBuilder(sinkWriter: SparkWriter, tableName: String)(implicit spark: SparkSession) extends SinkBuilder {
 
-  override def build(): Unit = sinkWriter.buildSafe(spark.table(tableName)).right.get
+  override def build(): Unit = sinkWriter.buildUnsafe(spark.table(tableName))
 
 }

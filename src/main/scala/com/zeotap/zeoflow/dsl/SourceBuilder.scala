@@ -11,6 +11,6 @@ trait SourceBuilder {
 
 case class SparkSourceBuilder(sparkLoader: SparkLoader, tableName: String)(implicit spark: SparkSession) extends SourceBuilder {
 
-  override def build(): Unit = sparkLoader.buildSafe.right.get.createOrReplaceTempView(tableName)
+  override def build(): Unit = sparkLoader.buildUnsafe.createOrReplaceTempView(tableName)
 
 }

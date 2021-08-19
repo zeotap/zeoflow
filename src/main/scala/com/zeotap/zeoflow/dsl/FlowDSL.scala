@@ -1,6 +1,6 @@
 package com.zeotap.zeoflow.dsl
 
-import com.zeotap.zeoflow.types.{Processor, Query}
+import com.zeotap.zeoflow.types.{Processor, QueryTransformation}
 
 sealed trait FlowDSL[A]
 
@@ -12,7 +12,7 @@ object FlowDSL {
   final case class LoadUserDefinedFunction[A](whitelist: List[String],blacklist: List[String])
     extends FlowDSL[A]
 
-  final case class RunSQLQueries[A](queries: List[Query]) extends FlowDSL[A]
+  final case class RunSQLQueries[A](queries: List[QueryTransformation]) extends FlowDSL[A]
 
   final case class RunUserDefinedProcessor[A](processor: Processor, inputTableNames: List[String], outputTableNames: List[String]) extends FlowDSL[A]
 
