@@ -2,7 +2,7 @@ package com.zeotap.zeoflow.constructs
 
 import cats.data.Reader
 import com.zeotap.zeoflow.dsl.{SinkBuilder, SourceBuilder}
-import com.zeotap.zeoflow.types.{ProcessorTransformation, QueryTransformation, Transformation, UDF}
+import com.zeotap.zeoflow.types.{SparkProcessorTransformation, SparkSQLTransformation, Transformation, UDF}
 import org.apache.spark.sql.SparkSession
 
 object SparkOps {
@@ -19,14 +19,14 @@ object SparkOps {
 
   def runTransformations(transformations: List[Transformation]): SparkReader[Unit] = Reader {
     spark => transformations.foreach {
-      case qt: QueryTransformation => spark.sql(qt.query).createOrReplaceTempView(qt.name)
-      case pt: ProcessorTransformation => pt.processor.process(pt.inputTableNames, pt.outputTableNames)
+      case qt: SparkSQLTransformation => spark.sql(qt.query).createOrReplaceTempView(qt.name)
+      case pt: SparkProcessorTransformation => pt.processor.process(pt.inputTableNames, pt.outputTableNames)
     }
   }
 
   def writeToSink(sinks: List[SinkBuilder]): SparkReader[Unit] = Reader {
     spark => sinks.foreach(sink => sink.build())
-  }
+  }x
 
   def preprocessProgram(sources: List[SourceBuilder],
                         udfs: List[UDF],

@@ -60,11 +60,11 @@ class TestRandom extends FunSuite with DataFrameSuiteBase {
     )
 
     val transformations: List[Transformation] = List(
-      QueryTransformation("select *, 'abc' as newCol from dataFrame", "dataFrame2"),
-      QueryTransformation("select DeviceId, newCol from dataFrame2", "dataFrame3"),
-      QueryTransformation("select Common_DataPartnerID, Demographic_Country, Common_TS from dataFrame2", "dataFrame4"),
+      SparkSQLTransformation("select *, 'abc' as newCol from dataFrame", "dataFrame2"),
+      SparkSQLTransformation("select DeviceId, newCol from dataFrame2", "dataFrame3"),
+      SparkSQLTransformation("select Common_DataPartnerID, Demographic_Country, Common_TS from dataFrame2", "dataFrame4"),
       ProcessorTransformation(new CustomProcessor()(spark), List("dataFrame2", "dataFrame3"), List("dataFrame5", "dataFrame6")),
-      QueryTransformation("select *, dummyFunc(newCol) as newCol2, sumFunc(newCol, random) as newCol3 from dataFrame6", "dataFrame7")
+      SparkSQLTransformation("select *, dummyFunc(newCol) as newCol2, sumFunc(newCol, random) as newCol3 from dataFrame6", "dataFrame7")
     )
 
     val sinks = List(
