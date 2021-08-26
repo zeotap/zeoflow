@@ -1,5 +1,6 @@
 package com.zeotap.zeoflow.dsl
 
+import com.zeotap.expectations.column.dsl.ColumnExpectation
 import com.zeotap.zeoflow.types.{Processor, QueryTransformation}
 
 sealed trait FlowDSL[A]
@@ -18,7 +19,7 @@ object FlowDSL {
 
   final case class WriteToSink[A](sinks: List[SinkBuilder]) extends FlowDSL[A]
 
-  final case class AssertExpectation[A]() extends FlowDSL[A]
+  final case class AssertExpectation[A](sinkTables: List[String], columnExpectations: List[ColumnExpectation]) extends FlowDSL[A]
 
   final case class SendAlert[A]() extends FlowDSL[A]
 
