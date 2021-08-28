@@ -9,15 +9,15 @@ repositories {
     maven {
         url "https://zeotap.jfrog.io/zeotap/libs-release"
         credentials {
-            username "$artifactory_user"
-            password "$artifactory_password"
+            username "joydeep.roy"
+            password "AKCp8ihLK73JbNjZytkhsTgvHUYxcW3WjpD5DfXs8xWfQBHG75XbXcP37sfACJvJTbXdyZnrE"
         }
     }
     maven {
         url "https://zeotap.jfrog.io/zeotap/libs-snapshot"
         credentials {
-            username "$artifactory_user"
-            password "$artifactory_password"
+            username "joydeep.roy"
+            password "AKCp8ihLK73JbNjZytkhsTgvHUYxcW3WjpD5DfXs8xWfQBHG75XbXcP37sfACJvJTbXdyZnrE"
         }
     }
 }
@@ -38,6 +38,17 @@ dependencies {
     implementation "org.typelevel:cats-core_2.11:2.0.0"
     implementation "org.typelevel:cats-free_2.11:2.0.0"
     implementation 'org.scala-lang:scala-library:2.11.12'
+    // https://mvnrepository.com/artifact/org.apache.beam/beam-runners-spark
+    implementation group: 'org.apache.beam', name: 'beam-runners-spark', version: '2.31.0'
+    // https://mvnrepository.com/artifact/org.apache.beam/beam-runners-direct-java
+    testImplementation group: 'org.apache.beam', name: 'beam-runners-direct-java', version: '2.31.0'
+//// https://mvnrepository.com/artifact/org.apache.beam/beam-sdks-java-io-google-cloud-platform
+//    implementation group: 'org.apache.beam', name: 'beam-sdks-java-io-google-cloud-platform', version: '2.31.0'
+//// https://mvnrepository.com/artifact/org.apache.beam/beam-runners-google-cloud-dataflow-java
+//    implementation group: 'org.apache.beam', name: 'beam-runners-google-cloud-dataflow-java', version: '2.31.0'
+// https://mvnrepository.com/artifact/org.apache.beam/beam-sdks-java-extensions-sql
+    implementation group: 'org.apache.beam', name: 'beam-sdks-java-extensions-sql', version: '2.31.0'
+
 
     testImplementation 'junit:junit:4.12'
     testImplementation "org.mockito:mockito-core:2.8.9"

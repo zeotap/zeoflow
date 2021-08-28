@@ -1,12 +1,13 @@
 package com.zeotap.zeoflow
 
 import java.io.File
-
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import com.zeotap.sink.spark.writer.SparkWriter
 import com.zeotap.source.spark.loader.SparkLoader
 import com.zeotap.zeoflow.constructs.SparkOps
-import com.zeotap.zeoflow.dsl.{SourceBuilder, SparkSinkBuilder, SparkSourceBuilder}
+import com.zeotap.zeoflow.dsl.source.{Source, SparkSourceBuilder}
+import com.zeotap.zeoflow.dsl.SparkSourceBuilder
+import com.zeotap.zeoflow.dsl.sink.SparkSinkBuilder
 import com.zeotap.zeoflow.types._
 import org.apache.commons.io.FileUtils
 import org.apache.spark.sql.Row
@@ -47,7 +48,7 @@ class TestRandom extends FunSuite with DataFrameSuiteBase {
 
     dataFrame.write.format("avro").save("src/test/resources/custom-input-format/yr=2021/mon=08/dt=19")
 
-    val sources: List[SourceBuilder] = List(
+    val sources: List[Source] = List(
       SparkSourceBuilder(SparkLoader.avro.load("src/test/resources/custom-input-format/yr=2021/mon=08/dt=19"), "dataFrame")(spark)
     )
 
