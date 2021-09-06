@@ -2,7 +2,7 @@ package com.zeotap.zeoflow.interpreters
 
 import cats.arrow.FunctionK
 import cats.data.Reader
-import com.zeotap.zeoflow.constructs.SparkOps.SparkExt
+import com.zeotap.zeoflow.constructs.FlowDslSparkOps.SparkExt
 import com.zeotap.zeoflow.dsl.FlowDSL
 import com.zeotap.zeoflow.dsl.FlowDSL._
 import org.apache.spark.sql.SparkSession
@@ -17,6 +17,7 @@ object SparkInterpreters {
         case LoadSources(sources) => spark.loadSources(sources)
         case LoadUserDefinedFunctions(udfs) => spark.loadUserDefinedFunctions(udfs)
         case RunTransformations(transformations) => spark.runTransformations(transformations)
+        case AssertExpectation(columnAssertions) => spark.assertDataFrameExpectations(columnAssertions)
         case WriteToSinks(sinks) => spark.writeToSinks(sinks)
       }
       flow.asInstanceOf[A]

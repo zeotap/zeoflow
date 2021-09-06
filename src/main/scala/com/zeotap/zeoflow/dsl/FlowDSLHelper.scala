@@ -17,6 +17,8 @@ object FlowDSLHelper {
 
   def writeToSinks[A](sinks: List[SinkBuilder]): FreeFlowDSL[A] = liftF(WriteToSinks(sinks))
 
+  def assertDataFrameExpectations[A](columnAssertions: List[ColumnAssertions]): FreeFlowDSL[A] = liftF(AssertExpectation(columnAssertions))
+
 //  def runSQLQueries[A](queries: List[QueryTransformation]): FreeFlowDSL[A] = liftF(RunSQLQueries(queries))
 //
 //  def runUserDefinedProcessor[A](processor: Processor, inputTableNames: List[String], outputTableNames: List[String]): FreeFlowDSL[A] = liftF(RunUserDefinedProcessor(processor, inputTableNames, outputTableNames))

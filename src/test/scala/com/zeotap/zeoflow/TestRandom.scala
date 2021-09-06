@@ -87,4 +87,70 @@ class TestRandom extends FunSuite with DataFrameSuiteBase {
     })
   }
 
+  test("Preprocess with Assertions") {
+
+    val schema = List(
+      StructField("Common_DataPartnerID", IntegerType, true),
+      StructField("DeviceId", StringType, true),
+      StructField("Demographic_Country", StringType, true),
+      StructField("Common_TS", StringType, true)
+    )
+
+    val dataFrame = spark.createDataFrame(
+      spark.sparkContext.parallelize(Seq(
+        Row(1,"1","India","1504679559"),
+        Row(1,"2","India","1504679359"),
+        Row(1,"3","Spain","1504679459"),
+        Row(1,"4","India","1504679659")
+      )),
+      StructType(schema)
+    )
+
+    dataFrame.write.format("avro").save("src/test/resources/custom-input-format/yr=2021/mon=08/dt=19")
+
+    val sources: List[SourceBuilder] = List(
+      SparkSourceBuilder(SparkLoader.avro.load("src/test/resources/custom-input-format/yr=2021/mon=08/dt=19"), "dataFrame")(spark)
+    )
+
+    val dummyUDF: UserDefinedFunction = udf((column: String) => s"$column ABC")
+    val sumUDF: UserDefinedFunction = udf((column1: String, column2: String) => s"$column1|$column2")
+
+    val udfs: List[UDF] = List(
+      UDF(dummyUDF, "dummyFunc"),
+      UDF(sumUDF, "sumFunc")
+    )
+
+    val transformations: List[Transformation] = List(
+      QueryTransformation("select *, 'abc' as newCol from dataFrame", "dataFrame2"),
+      QueryTransformation("select DeviceId, newCol from dataFrame2", "dataFrame3"),
+      QueryTransformation("select Common_DataPartnerID, Demographic_Country, Common_TS from dataFrame2", "dataFrame4"),
+      ProcessorTransformation(new CustomProcessor()(spark), List("dataFrame2", "dataFrame3"), List("dataFrame5", "dataFrame6")),
+      QueryTransformation("select *, dummyFunc(newCol) as newCol2, sumFunc(newCol, random) as newCol3 from dataFrame6", "preprocessDF")
+    )
+
+    val columnAssertions: List[ColumnAssertions] = List(
+      ColumnAssertionsQA("Delidatax", "eu", "profile", 5, 5),
+      ColumnAssertionsProd("Delidatax", "eu", "profile", List("preprocessDF"))
+    )
+
+    val sinks = List(
+      SparkSinkBuilder(SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1"), "dataFrame5")(spark),
+      SparkSinkBuilder(SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2"), "dataFrame6")(spark),
+      SparkSinkBuilder(SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path3"), "preprocessDF")(spark)
+    )
+
+//    Production.reprocessProgramWithAssertions(sources, udfs, transformations, columnAssertions, sinks).foldMap[SparkFlow](sparkFlowInterpreter).run(spark)
+    Production.preprocessProgramWithAssertions(sources, udfs, transformations, columnAssertions, sinks).foldMap[SparkFlow](sparkFlowInterpreter).run(spark)
+
+    List(
+      "src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1",
+      "src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2",
+      "src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path3"
+    ).foreach(path => {
+      val df = spark.read.format("avro").load(path)
+      df.printSchema()
+      df.show(false)
+    })
+  }
+
 }

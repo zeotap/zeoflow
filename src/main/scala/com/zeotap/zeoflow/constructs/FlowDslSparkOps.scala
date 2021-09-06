@@ -1,10 +1,11 @@
 package com.zeotap.zeoflow.constructs
 
 import com.zeotap.zeoflow.dsl.{SinkBuilder, SourceBuilder}
-import com.zeotap.zeoflow.types.{ProcessorTransformation, QueryTransformation, Transformation, UDF}
+import com.zeotap.zeoflow.types.{ColumnAssertions, ColumnAssertionsProd, ColumnAssertionsQA, ProcessorTransformation, QueryTransformation, Transformation, UDF}
 import org.apache.spark.sql.SparkSession
+import com.zeotap.zeoflow.constructs.AssertionHelper.{prodAssertion, qaAssertions}
 
-object SparkOps {
+object FlowDslSparkOps {
 
   implicit class SparkExt(spark: SparkSession) {
 
@@ -20,6 +21,14 @@ object SparkOps {
 
     def writeToSinks(sinks: List[SinkBuilder]): Unit = sinks.foreach(sink => sink.build())
 
+    def assertDataFrameExpectations(columnAssertions: List[ColumnAssertions]): Unit = {
+      columnAssertions.foreach {
+        case prod: ColumnAssertionsProd => prodAssertion(prod.dpName, prod.region, prod.productType, prod.inputTableNames)
+
+        case qa: ColumnAssertionsQA => qaAssertions(qa.dpName, qa.region, qa.productType, qa.minDataframeSize, qa.totalDFsRequired)
+
+      }
+    }
   }
 
 }
