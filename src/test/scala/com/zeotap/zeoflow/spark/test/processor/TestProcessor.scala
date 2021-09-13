@@ -4,14 +4,16 @@ import com.zeotap.zeoflow.spark.types.SparkProcessor
 import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.lit
 
-class CustomProcessor2 extends SparkProcessor {
+class TestProcessor extends SparkProcessor {
   override def process(inputTables: Map[String, DataFrame], readOnlyGlobalCache: Map[String, Any]): Map[String, DataFrame] = {
-    val df1 = inputTables("dataFrame2")
-    val df2 = inputTables("dataFrame3")
+    val newColName = readOnlyGlobalCache("newColName").toString
+
+    val df = inputTables("dataFrame")
+    val df2 = df.withColumn(newColName, lit("abc").cast("string"))
 
     Map(
-      "dataFrame5" -> df1.withColumn("dummy", lit(null).cast("string")),
-      "dataFrame6" -> df2.withColumn("random", lit(null).cast("string"))
+      "dataFrame2" -> df2,
+      "dataFrame3" -> df2.withColumn("newCol2", lit("def").cast("string"))
     )
   }
 }

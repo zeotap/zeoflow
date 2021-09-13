@@ -5,10 +5,10 @@ import com.zeotap.sink.spark.writer.SparkWriter
 import com.zeotap.source.spark.loader.SparkLoader
 import com.zeotap.zeoflow.common.constructs.Production
 import com.zeotap.zeoflow.common.test.helpers.DataFrameUtils.assertDataFrameEquality
-import com.zeotap.zeoflow.common.types.{FlowUDF, SinkBuilder, SourceBuilder, Transformation}
+import com.zeotap.zeoflow.common.types.{FlowUDF, Sink, Source, Transformation}
 import com.zeotap.zeoflow.spark.interpreters.SparkInterpreters._
-import com.zeotap.zeoflow.spark.test.processor.CustomProcessor2
-import com.zeotap.zeoflow.spark.types.{SparkSQLQueryProcessor, SparkSinkBuilder, SparkSourceBuilder, SparkUDF}
+import com.zeotap.zeoflow.spark.test.processor.TestProcessor2
+import com.zeotap.zeoflow.spark.types.{SparkSQLQueryProcessor, SparkSink, SparkSource, SparkUDF}
 import org.apache.commons.io.FileUtils
 import org.apache.spark.sql.expressions.UserDefinedFunction
 import org.apache.spark.sql.functions.udf
@@ -55,20 +55,20 @@ class SparkProductionE2EFlowTest extends FunSuite with DataFrameSuiteBase with B
   test("e2eFlowWithoutUDFsTest") {
     implicit val sparkSession: SparkSession = spark
 
-    val sources: List[SourceBuilder[DataFrame]] = List(
-      SparkSourceBuilder("dataFrame", SparkLoader.avro.load("src/test/resources/custom-input-format/yr=2021/mon=08/dt=19"))
+    val sources: List[Source[DataFrame]] = List(
+      SparkSource("dataFrame", SparkLoader.avro.load("src/test/resources/custom-input-format/yr=2021/mon=08/dt=19"))
     )
 
     val transformations: List[Transformation[DataFrame]] = List(
       SparkSQLQueryProcessor("dataFrame2", "select *, 'abc' as newCol from dataFrame"),
       SparkSQLQueryProcessor("dataFrame3", "select DeviceId, newCol from dataFrame2"),
       SparkSQLQueryProcessor("dataFrame4", "select Common_DataPartnerID, Demographic_Country, Common_TS from dataFrame2"),
-      new CustomProcessor2
+      new TestProcessor2
     )
 
-    val sinks: List[SinkBuilder[DataFrame]] = List(
-      SparkSinkBuilder("dataFrame5", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1")),
-      SparkSinkBuilder("dataFrame6", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2"))
+    val sinks: List[Sink[DataFrame]] = List(
+      SparkSink("dataFrame5", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1")),
+      SparkSink("dataFrame6", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2"))
     )
 
     Production.e2eFlow(sources, List(), transformations, sinks).foldMap[SparkFlow](sparkFlowInterpreter).run(Map()).value._2
@@ -118,8 +118,8 @@ class SparkProductionE2EFlowTest extends FunSuite with DataFrameSuiteBase with B
   test("e2eFlowTest") {
     implicit val sparkSession: SparkSession = spark
 
-    val sources: List[SourceBuilder[DataFrame]] = List(
-      SparkSourceBuilder("dataFrame", SparkLoader.avro.load("src/test/resources/custom-input-format/yr=2021/mon=08/dt=19"))
+    val sources: List[Source[DataFrame]] = List(
+      SparkSource("dataFrame", SparkLoader.avro.load("src/test/resources/custom-input-format/yr=2021/mon=08/dt=19"))
     )
 
     val dummyUDF: UserDefinedFunction = udf((column: String) => s"$column ABC")
@@ -134,14 +134,14 @@ class SparkProductionE2EFlowTest extends FunSuite with DataFrameSuiteBase with B
       SparkSQLQueryProcessor("dataFrame2", "select *, 'abc' as newCol from dataFrame"),
       SparkSQLQueryProcessor("dataFrame3", "select DeviceId, newCol from dataFrame2"),
       SparkSQLQueryProcessor("dataFrame4", "select Common_DataPartnerID, Demographic_Country, Common_TS from dataFrame2"),
-      new CustomProcessor2,
+      new TestProcessor2,
       SparkSQLQueryProcessor("dataFrame7", "select *, dummyFunc(newCol) as newCol2, sumFunc(newCol, random) as newCol3 from dataFrame6")
     )
 
-    val sinks: List[SinkBuilder[DataFrame]] = List(
-      SparkSinkBuilder("dataFrame5", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1")),
-      SparkSinkBuilder("dataFrame6", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2")),
-      SparkSinkBuilder("dataFrame7", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path3"))
+    val sinks: List[Sink[DataFrame]] = List(
+      SparkSink("dataFrame5", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1")),
+      SparkSink("dataFrame6", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2")),
+      SparkSink("dataFrame7", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path3"))
     )
 
     Production.e2eFlow(sources, udfs, transformations, sinks).foldMap[SparkFlow](sparkFlowInterpreter).run(Map()).value._2
