@@ -14,11 +14,11 @@ object SparkInterpreters {
 
   def sparkFlowInterpreter()(implicit spark: SparkSession): FunctionK[FlowDSL, SparkFlow] = new FunctionK[FlowDSL, SparkFlow] {
     override def apply[A](feature: FlowDSL[A]): SparkFlow[A] = State {
-      map => feature match {
-        case LoadSources(sources) => (spark.loadSources(sources.asInstanceOf[List[SourceBuilder[DataFrame]]]), map.asInstanceOf[A])
-        case LoadUserDefinedFunctions(udfs) => (map, spark.loadUserDefinedFunctions(udfs).asInstanceOf[A])
-        case RunTransformations(transformations) => (spark.runTransformations(map, transformations.asInstanceOf[List[Transformation[DataFrame]]]), map.asInstanceOf[A])
-        case WriteToSinks(sinks) => (map, spark.writeToSinks(map, sinks.asInstanceOf[List[SinkBuilder[DataFrame]]]).asInstanceOf[A])
+      context => feature match {
+        case LoadSources(sources) => (spark.loadSources(sources.asInstanceOf[List[SourceBuilder[DataFrame]]]), context.asInstanceOf[A])
+        case LoadUserDefinedFunctions(udfs) => (context, spark.loadUserDefinedFunctions(udfs).asInstanceOf[A])
+        case RunTransformations(transformations) => (spark.runTransformations(context, transformations.asInstanceOf[List[Transformation[DataFrame]]]), context.asInstanceOf[A])
+        case WriteToSinks(sinks) => (context, spark.writeToSinks(context, sinks.asInstanceOf[List[SinkBuilder[DataFrame]]]).asInstanceOf[A])
       }
     }
   }

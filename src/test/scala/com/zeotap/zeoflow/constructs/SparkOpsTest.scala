@@ -6,11 +6,11 @@ import com.zeotap.source.spark.loader.SparkLoader
 import com.zeotap.zeoflow.dsl.{SinkBuilder, SourceBuilder, SparkSinkBuilder, SparkSourceBuilder}
 import com.zeotap.zeoflow.test.helpers.DataFrameUtils.assertDataFrameEquality
 import com.zeotap.zeoflow.test.processor.{CustomProcessor, CustomProcessor2}
-import com.zeotap.zeoflow.types.{SparkQuery, Transformation, UDF}
+import com.zeotap.zeoflow.types.{FlowUDF, SparkSQLQueryProcessor, SparkUDF, Transformation}
 import org.apache.commons.io.FileUtils
 import org.apache.spark.sql.functions.udf
-import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.apache.spark.sql.types.{IntegerType, StringType, StructField, StructType}
+import org.apache.spark.sql.{DataFrame, Row}
 import org.scalatest.FunSuite
 
 import java.io.File
@@ -48,7 +48,7 @@ class SparkOpsTest extends FunSuite with DataFrameSuiteBase {
     dataFrame.write.format("avro").save("src/test/resources/custom-input-format/yr=2021/mon=09/dt=08")
 
     val sources: List[SourceBuilder[DataFrame]] = List(
-      SparkSourceBuilder(SparkLoader.avro.load("src/test/resources/custom-input-format/yr=2021/mon=09/dt=08"), "dataFrame")(spark)
+      SparkSourceBuilder("dataFrame", SparkLoader.avro.load("src/test/resources/custom-input-format/yr=2021/mon=09/dt=08"))(spark)
     )
 
     import com.zeotap.zeoflow.constructs.SparkOps._
@@ -58,9 +58,9 @@ class SparkOpsTest extends FunSuite with DataFrameSuiteBase {
   }
 
   test("loadUDFsTest") {
-    val udfs: List[UDF] = List(
-      UDF(udf((column: String) => s"$column$column"), "twiceFunc"),
-      UDF(udf((column: String) => s"$column$column$column"), "thriceFunc")
+    val udfs: List[FlowUDF] = List(
+      SparkUDF("twiceFunc", udf((column: String) => s"$column$column"))(spark),
+      SparkUDF("thriceFunc", udf((column: String) => s"$column$column$column"))(spark)
     )
 
     import com.zeotap.zeoflow.constructs.SparkOps._
@@ -125,7 +125,7 @@ class SparkOpsTest extends FunSuite with DataFrameSuiteBase {
     )
 
     val transformations: List[Transformation[DataFrame]] = List(
-      SparkQuery("select *, 'abc' as newCol from dataFrame", "dataFrame2")(spark)
+      SparkSQLQueryProcessor("dataFrame2", "select *, 'abc' as newCol from dataFrame")(spark)
     )
 
     import com.zeotap.zeoflow.constructs.SparkOps._
@@ -171,8 +171,8 @@ class SparkOpsTest extends FunSuite with DataFrameSuiteBase {
     )
 
     val transformations: List[Transformation[DataFrame]] = List(
-      SparkQuery("select *, 'abc' as newCol from dataFrame", "dataFrame2")(spark),
-      SparkQuery("select *, 'def' as newCol2 from dataFrame2", "dataFrame3")(spark)
+      SparkSQLQueryProcessor("dataFrame2", "select *, 'abc' as newCol from dataFrame")(spark),
+      SparkSQLQueryProcessor("dataFrame3", "select *, 'def' as newCol2 from dataFrame2")(spark)
     )
 
     import com.zeotap.zeoflow.constructs.SparkOps._
@@ -223,6 +223,7 @@ class SparkOpsTest extends FunSuite with DataFrameSuiteBase {
     )
 
     import com.zeotap.zeoflow.constructs.SparkOps._
+    spark.conf.set("newColName", "newCol")
     val transformationOutput = spark.runTransformations(Map("dataFrame" -> dataFrame), transformations)
 
     val expectedSchema = List(
@@ -271,6 +272,7 @@ class SparkOpsTest extends FunSuite with DataFrameSuiteBase {
     )
 
     import com.zeotap.zeoflow.constructs.SparkOps._
+    spark.conf.set("newColName", "newCol")
     val transformationOutput = spark.runTransformations(Map("dataFrame" -> dataFrame), transformations)
 
     val expectedSchema1 = List(
@@ -335,8 +337,8 @@ class SparkOpsTest extends FunSuite with DataFrameSuiteBase {
     )
 
     val transformations: List[Transformation[DataFrame]] = List(
-      SparkQuery("select *, 'abc' as newCol from dataFrame", "dataFrame2")(spark),
-      SparkQuery("select *, 'def' as newCol2 from dataFrame2", "dataFrame3")(spark),
+      SparkSQLQueryProcessor("dataFrame2", "select *, 'abc' as newCol from dataFrame")(spark),
+      SparkSQLQueryProcessor("dataFrame3", "select *, 'def' as newCol2 from dataFrame2")(spark),
       new CustomProcessor2
     )
 
@@ -424,8 +426,8 @@ class SparkOpsTest extends FunSuite with DataFrameSuiteBase {
     )
 
     val sinks: List[SinkBuilder[DataFrame]] = List(
-      SparkSinkBuilder(SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=09/dt=08/path1"), "dataFrame"),
-      SparkSinkBuilder(SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=09/dt=08/path2"), "dataFrame2")
+      SparkSinkBuilder("dataFrame", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=09/dt=08/path1")),
+      SparkSinkBuilder("dataFrame2", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=09/dt=08/path2"))
     )
 
     import com.zeotap.zeoflow.constructs.SparkOps._

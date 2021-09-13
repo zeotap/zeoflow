@@ -1,10 +1,9 @@
 package com.zeotap.zeoflow.types
 
-import com.zeotap.zeoflow.utils.spark.SparkUtils.moveTablesToContext
+import com.zeotap.zeoflow.utils.spark.SparkUtils.SparkContextExt
 import org.apache.spark.sql.DataFrame
 
-class SparkProcessor extends Processor[DataFrame] {
-  override def preprocess(inputTables: Map[String, DataFrame]): Map[String, DataFrame] = moveTablesToContext(inputTables)
-  override def process(inputTables: Map[String, DataFrame], cache: Map[String, Any]): Map[String, DataFrame] = Map()
-  override def postprocess(inputTables: Map[String, DataFrame]): Map[String, DataFrame] = moveTablesToContext(inputTables)
+abstract class SparkProcessor extends Transformation[DataFrame] {
+  def preprocess(inputTables: Map[String, DataFrame]): Map[String, DataFrame] = inputTables.moveTablesToContext
+  def postprocess(outputTables: Map[String, DataFrame]): Map[String, DataFrame] = outputTables.moveTablesToContext
 }
