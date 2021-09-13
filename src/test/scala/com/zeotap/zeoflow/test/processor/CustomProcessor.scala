@@ -5,8 +5,8 @@ import org.apache.spark.sql.DataFrame
 import org.apache.spark.sql.functions.lit
 
 class CustomProcessor extends SparkProcessor {
-  override def process(inputTables: Map[String, DataFrame], cache: Map[String, Any]): Map[String, DataFrame] = {
-    val newColName = cache("newColName").toString
+  override def process(inputTables: Map[String, DataFrame], readOnlyGlobalCache: Map[String, Any]): Map[String, DataFrame] = {
+    val newColName = readOnlyGlobalCache("newColName").toString
 
     val df = inputTables("dataFrame")
     val df2 = df.withColumn(newColName, lit("abc").cast("string"))
