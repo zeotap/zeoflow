@@ -1,8 +1,8 @@
 package com.zeotap.zeoflow.spark.constructs
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import com.zeotap.sink.spark.writer.SparkWriter
-import com.zeotap.source.spark.loader.SparkLoader
+import com.zeotap.data.io.sink.spark.writer.SparkWriter
+import com.zeotap.data.io.source.spark.loader.SparkLoader
 import com.zeotap.zeoflow.common.test.helpers.DataFrameUtils.assertDataFrameEquality
 import com.zeotap.zeoflow.common.types.{FlowUDF, Sink, Source, Transformation}
 import com.zeotap.zeoflow.spark.test.processor.{TestProcessor, TestProcessor2}
@@ -58,7 +58,7 @@ class SparkOpsTest extends FunSuite with DataFrameSuiteBase {
   }
 
   test("loadUDFsTest") {
-    val udfs: List[FlowUDF] = List(
+    val udfs: List[FlowUDF[Unit]] = List(
       SparkUDF("twiceFunc", udf((column: String) => s"$column$column"))(spark),
       SparkUDF("thriceFunc", udf((column: String) => s"$column$column$column"))(spark)
     )

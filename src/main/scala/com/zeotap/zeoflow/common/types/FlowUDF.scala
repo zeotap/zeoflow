@@ -1,5 +1,5 @@
 package com.zeotap.zeoflow.common.types
 
-trait FlowUDF {
-  def register(): Unit
+trait FlowUDF[A] {
+  def register(): A
 }

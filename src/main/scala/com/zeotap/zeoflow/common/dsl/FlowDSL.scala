@@ -8,7 +8,7 @@ object FlowDSL {
 
   final case class LoadSources[A](sources: List[Source[A]]) extends FlowDSL[A]
 
-  final case class LoadUserDefinedFunctions[A](udfs: List[FlowUDF]) extends FlowDSL[A]
+  final case class LoadUserDefinedFunctions[A](udfs: List[FlowUDF[A]]) extends FlowDSL[A]
 
   final case class RunTransformations[A](transformations: List[Transformation[A]]) extends FlowDSL[A]
 

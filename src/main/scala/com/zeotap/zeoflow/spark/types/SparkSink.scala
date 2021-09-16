@@ -1,6 +1,6 @@
 package com.zeotap.zeoflow.spark.types
 
-import com.zeotap.sink.spark.writer.SparkWriter
+import com.zeotap.data.io.sink.spark.writer.SparkWriter
 import com.zeotap.zeoflow.common.types.Sink
 import org.apache.spark.sql.DataFrame
 

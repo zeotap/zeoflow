@@ -1,9 +1,10 @@
 package com.zeotap.zeoflow.spark
 
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
-import com.zeotap.sink.spark.writer.SparkWriter
-import com.zeotap.source.spark.loader.SparkLoader
+import com.zeotap.data.io.sink.spark.writer.SparkWriter
+import com.zeotap.data.io.source.spark.loader.SparkLoader
 import com.zeotap.zeoflow.common.constructs.Production
+import com.zeotap.zeoflow.common.dsl.FlowDSLHelper.runTransformations
 import com.zeotap.zeoflow.common.test.helpers.DataFrameUtils.assertDataFrameEquality
 import com.zeotap.zeoflow.common.types.{FlowUDF, Sink, Source, Transformation}
 import com.zeotap.zeoflow.spark.interpreters.SparkInterpreters._
@@ -125,7 +126,7 @@ class SparkProductionE2EFlowTest extends FunSuite with DataFrameSuiteBase with B
     val dummyUDF: UserDefinedFunction = udf((column: String) => s"$column ABC")
     val sumUDF: UserDefinedFunction = udf((column1: String, column2: String) => s"$column1|$column2")
 
-    val udfs: List[FlowUDF] = List(
+    val udfs: List[FlowUDF[Unit]] = List(
       SparkUDF("dummyFunc", dummyUDF),
       SparkUDF("sumFunc", sumUDF)
     )

@@ -9,7 +9,7 @@ object SparkOps {
 
     def loadSources(sources: List[Source[DataFrame]]): Map[String, DataFrame] = sources.map(source => source.load()).toMap
 
-    def loadUserDefinedFunctions(udfs: List[FlowUDF]): Unit = udfs.foreach(udf => udf.register())
+    def loadUserDefinedFunctions(udfs: List[FlowUDF[Unit]]): Unit = udfs.foreach(udf => udf.register())
 
     def runTransformations(inputTables: Map[String, DataFrame], transformations: List[Transformation[DataFrame]]): Map[String, DataFrame] =
       transformations.foldLeft(inputTables) { (accMap, transformation) =>

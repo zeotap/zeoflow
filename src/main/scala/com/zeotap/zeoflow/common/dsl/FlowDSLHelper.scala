@@ -11,7 +11,7 @@ object FlowDSLHelper {
 
   def loadSources[A](sources: List[Source[A]]): FreeFlowDSL[A] = liftF(LoadSources(sources))
 
-  def loadUserDefinedFunctions[A](udfs: List[FlowUDF]): FreeFlowDSL[A] = liftF(LoadUserDefinedFunctions(udfs))
+  def loadUserDefinedFunctions[A](udfs: List[FlowUDF[A]]): FreeFlowDSL[A] = liftF(LoadUserDefinedFunctions(udfs))
 
   def runTransformations[A](transformations: List[Transformation[A]]): FreeFlowDSL[A] = liftF(RunTransformations(transformations))
 

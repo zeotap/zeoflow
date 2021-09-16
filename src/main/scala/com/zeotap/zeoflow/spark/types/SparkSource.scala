@@ -1,6 +1,6 @@
 package com.zeotap.zeoflow.spark.types
 
-import com.zeotap.source.spark.loader.SparkLoader
+import com.zeotap.data.io.source.spark.loader.SparkLoader
 import com.zeotap.zeoflow.common.types.Source
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
