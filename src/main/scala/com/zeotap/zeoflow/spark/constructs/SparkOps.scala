@@ -1,9 +1,10 @@
 package com.zeotap.zeoflow.spark.constructs
 
-import com.zeotap.expectations.column.dsl.ColumnDSL
+import com.zeotap.expectations.column.dsl.{ColumnDSL, ColumnExpectation}
 import com.zeotap.expectations.column.ops.ColumnExpectationOps.ColumnDSLOps
 import com.zeotap.expectations.data.dsl.DataExpectation.ExpectationResult
 import com.zeotap.zeoflow.common.types.{FlowUDF, Sink, Source, Transformation}
+import com.zeotap.zeoflow.spark.utils.SparkUtils._
 import org.apache.spark.sql.{DataFrame, SparkSession}
 
 object SparkOps {
@@ -21,16 +22,21 @@ object SparkOps {
 
     def writeToSinks(inputTables: Map[String, DataFrame], sinks: List[Sink[DataFrame]]): Unit = sinks.foreach(sink => sink.write(inputTables))
 
-    def runColumnExpectation(inputTables: Map[String, DataFrame], columnDSL: Map[String, ColumnDSL]): Map[String, Map[String, ExpectationResult]] =
+    def runColumnExpectation(inputTables: Map[String, DataFrame],
+                             columnDSL: Map[String, Array[(ColumnExpectation, Boolean)]]): Map[String, (DataFrame, Map[String, ExpectationResult])] = {
 
-      columnDSL.foldLeft(Map.empty: Map[String, Map[String, ExpectationResult]])((accMap, columnDSL) => {
-      if (inputTables.contains(columnDSL._1))
-        accMap ++ Map(columnDSL._1 -> columnDSL._2.runOnSpark(inputTables(columnDSL._1)))
-      else
-        throw new NoSuchElementException("Production DataFrames do not have DP ColumnDSL Dataframes")
+      val getConsolidatedColumnDSL = columnDSL.foldLeft(Map.empty: Map[String, ColumnDSL])((accMap, dsl) => {
+        accMap ++ Map(dsl._1 -> ColumnDSL(dsl._2.map(_._1): _*))
+      })
+      val columnDSLVerification = SparkContextExt(inputTables).validateColumnDSL(getConsolidatedColumnDSL)
 
-    })
-
+      val columnExpectationResult = inputTables.foldLeft(Map.empty: Map[String, (DataFrame, Map[String, ExpectationResult])])((accMap, table) => {
+        if (true.equals(columnDSLVerification(table._1)))
+          accMap ++ Map(table._1 -> (inputTables(table._1), getConsolidatedColumnDSL(table._1).runOnSpark(inputTables(table._1))))
+        else accMap ++ Map()
+      })
+      columnExpectationResult
+    }
   }
 
 }
