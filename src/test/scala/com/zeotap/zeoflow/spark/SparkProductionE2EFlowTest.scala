@@ -1,14 +1,17 @@
 package com.zeotap.zeoflow.spark
 
+import cats.Id
+import cats.data.Chain
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import com.zeotap.data.io.sink.spark.writer.SparkWriter
 import com.zeotap.data.io.source.spark.loader.SparkLoader
-import com.zeotap.expectations.column.dsl.{ColumnDSL, ColumnExpectation}
-import com.zeotap.expectations.data.dsl.DataExpectation.ExpectationResult
+import com.zeotap.expectations.column.dsl.ColumnExpectation
+import com.zeotap.expectations.column.helper.ColumnExpectationUtils.ColumnExpectationOps
+import com.zeotap.expectations.data.dsl.DataExpectation.{ExpectationResult, IndividualResult}
 import com.zeotap.zeoflow.common.constructs.Production
 import com.zeotap.zeoflow.common.dsl.FlowDSLHelper.runColumnExpectation
+import com.zeotap.zeoflow.common.flowexpectations.assertExpectationsUtils.validateOutputDataExpectations
 import com.zeotap.zeoflow.common.test.helpers.DataFrameUtils.assertDataFrameEquality
-import com.zeotap.zeoflow.common.test.helpers.SampleDpAssertionDefinition
 import com.zeotap.zeoflow.common.types.{FlowUDF, Sink, Source, Transformation}
 import com.zeotap.zeoflow.spark.interpreters.SparkInterpreters._
 import com.zeotap.zeoflow.spark.test.processor.TestProcessor2
@@ -212,7 +215,7 @@ class SparkProductionE2EFlowTest extends FunSuite with DataFrameSuiteBase with B
     assertDataFrameEquality(expectedDataFrame3, actualDataFrame3, "DeviceId")
   }
 
-  /* test("Assert Expectation Test") {
+   test("Assert Expectation Test") {
 
     implicit val sparkSession: SparkSession = spark
 
@@ -243,99 +246,31 @@ class SparkProductionE2EFlowTest extends FunSuite with DataFrameSuiteBase with B
       StructType(sampleDataFrameSchema)
     )
 
-    val inputDataFrame: Map[String, DataFrame] = Map("preprocessDF" -> sampleDataFrame)
-    val sampleDP = new SampleDpAssertionDefinition()
-    val inputColumnDSL: Map[String, ColumnDSL] = sampleDP.getColumnDSL("eu", "profile")
+     val minAgeExpectation = Tuple2(ColumnExpectation("MinAge").addAgeExpectation().oneOf(List("18", "25", "35", "45", "55", "65")), false)
+     val maxAgeExpectation = Tuple2(ColumnExpectation("MaxAge").addAgeExpectation().oneOf(List("24", "34", "44", "54", "64", "99")), false)
+     val interestIABExpectation = Tuple2(ColumnExpectation("Interest_IAB_preprocess").addDynamicColumnExpectation(), false)
+     val genderExpectation = Tuple2(ColumnExpectation("Gender").addGenderExpectation(List()).mayHaveNullLiteral, false)
+     val cityExpectation = Tuple2(ColumnExpectation("city").mayHaveNullLiteral, false)
+     val createdTsExpectation = Tuple2(ColumnExpectation("CREATED_TS_raw").hasValidLength(List(10)).addTimestampExpectation(), true)
+     val timestampExpectation = Tuple2(ColumnExpectation("timestamp").hasValidLength(List(10)).addTimestampExpectation(), false)
 
-    val actualOutput: Map[String, Map[String, ExpectationResult]] = runColumnExpectation(inputColumnDSL).foldMap[SparkFlow](sparkFlowInterpreter).run(inputDataFrame).value._2.asInstanceOf[Map[String, Map[String, ExpectationResult]]]
+     val sampleDataPartner_output_data_expectation: Array[(ColumnExpectation, Boolean)] = Array(
+       timestampExpectation,
+       cityExpectation,
+       interestIABExpectation,
+       genderExpectation,
+       minAgeExpectation,
+       maxAgeExpectation,
+       createdTsExpectation,
+       Tuple2(ColumnExpectation("country_code_iso3").hasValidLength(List(3)).oneOf(List("FRA", "GBR", "ESP", "DEU")).addMandatoryColumnExpectation(), true)
+     )
 
-    val expectedOutput = "Map(preprocessDF -> " +
-      "Map(city -> WriterT((Chain(Right(MayHaveNullValueMetric(true,Some(city column may have null values but do not have empty string or white spaces as values in DataFrame),None,2,0))),Some(true))), " +
-      "timestamp -> WriterT((Chain(Right(TsFormatMetric(false,None,Some(Some timestamp Column Values have invalid timestamp format),0)), Right(NonNullMetric(true,Some(timestamp column have only non-null values),None,0)), Right(DefaultMetric(true,Some(timestamp column has datatype as StringType),None)), Right(validLengthCheckMetric(true,Some(timestamp column have cookies of Valid Length),None,10,0,10))),Some(false))), " +
-      "MinAge -> WriterT((Chain(Right(ValidEntryMetric(true,Some(MinAge column has one or more valid entries as mentioned in valid entry list),None,10)), Right(AgeBucketMetric(true,Some(MinAge column values lie within valid age range),None,10,0,0,10)), Right(MayHaveNullValueMetric(true,Some(MinAge column may have null values but do not have empty string or white spaces as values in DataFrame),None,0,0)), Right(DefaultMetric(true,Some(MinAge column has datatype as StringType),None))),Some(true))), " +
-      "CREATED_TS_raw -> WriterT((Chain(Right(TsFormatMetric(true,Some(CREATED_TS_raw column values matches predefined timestamp formats),None,10)), Right(NonNullMetric(true,Some(CREATED_TS_raw column have only non-null values),None,0)), Right(DefaultMetric(true,Some(CREATED_TS_raw column has datatype as StringType),None)), Right(validLengthCheckMetric(true,Some(CREATED_TS_raw column have cookies of Valid Length),None,10,0,10))),Some(true))), " +
-      "country_code_iso3 -> WriterT((Chain(Right(NonNullMetric(true,Some(country_code_iso3 column have only non-null values),None,0)), Right(DefaultMetric(true,Some(country_code_iso3 column has datatype as StringType),None)), Right(ValidEntryMetric(true,Some(country_code_iso3 column has one or more valid entries as mentioned in valid entry list),None,10)), Right(validLengthCheckMetric(true,Some(country_code_iso3 column have cookies of Valid Length),None,10,0,10))),Some(true))), " +
-      "MaxAge -> WriterT((Chain(Right(ValidEntryMetric(true,Some(MaxAge column has one or more valid entries as mentioned in valid entry list),None,8)), Right(AgeBucketMetric(true,Some(MaxAge column values lie within valid age range),None,8,2,0,10)), Right(MayHaveNullValueMetric(true,Some(MaxAge column may have null values but do not have empty string or white spaces as values in DataFrame),None,2,0)), Right(DefaultMetric(true,Some(MaxAge column has datatype as StringType),None))),Some(true))), " +
-      "Interest_IAB_preprocess -> WriterT((Chain(Right(CommaSeparatedMetric(false,None,Some(Some Interest_IAB_preprocess Column Values does not have proper comma separated values),7,9)), Right(MayHaveNullValueMetric(false,None,Some(Interest_IAB_preprocess column have empty String or white spaces or null as String value in the DataFrame),1,2)), Right(DefaultMetric(true,Some(Interest_IAB_preprocess column has datatype as StringType),None))),Some(false))), " +
-      "Gender -> WriterT((Chain(Right(MayHaveNullValueMetric(true,Some(Gender column may have null values but do not have empty string or white spaces as values in DataFrame),None,2,0)), Right(InValidEntryMetric(true,Some(Gender column does not have any invalid entry in data frame),None,0)), Right(ValidEntryMetric(true,Some(Gender column has one or more valid entries as mentioned in valid entry list),None,8)), Right(MayHaveNullValueMetric(true,Some(Gender column may have null values but do not have empty string or white spaces as values in DataFrame),None,2,0)), Right(DefaultMetric(true,Some(Gender column has datatype as StringType),None))),Some(true)))))"
+     val inputDataFrame: Map[String, DataFrame] = Map("finalDF" -> sampleDataFrame)
+     val inputColumnDSL: Map[String, Array[(ColumnExpectation, Boolean)]] = Map("finalDF" -> sampleDataPartner_output_data_expectation)
 
-    assertResult(expectedOutput)(actualOutput.toString())
-    println(actualOutput)
+    val actualOutput: Map[String, (DataFrame, Map[String, ExpectationResult])] = runColumnExpectation(inputColumnDSL).foldMap[SparkFlow](sparkFlowInterpreter).run(inputDataFrame).value._2.asInstanceOf[Map[String, (DataFrame, Map[String, ExpectationResult])]]
 
-  } */
+     assertTrue(validateOutputDataExpectations(actualOutput))
 
-  /*test("e2e FlowDSL Test with Assertions") {
-
-    implicit val sparkSession: SparkSession = spark
-
-    val sources: List[Source[DataFrame]] = List(
-      SparkSource("dataFrame", SparkLoader.avro.load("src/test/resources/custom-input-format/yr=2021/mon=08/dt=19"))
-    )
-
-    val dummyUDF: UserDefinedFunction = udf((column: String) => s"$column".concat("_sampleValue"))
-
-    val udfs: List[FlowUDF[Unit]] = List(
-      SparkUDF("dummyFunc", dummyUDF)
-    )
-
-    val transformations: List[Transformation[DataFrame]] = List(
-      SparkSQLQueryProcessor("dataFrame2", "select *, 'abc' as newCol from dataFrame"),
-      SparkSQLQueryProcessor("preprocessDF", "select *, dummyFunc(newCol) as newCol2 from dataFrame2")
-    )
-
-    val sampleDP = new SampleDpAssertionDefinition()
-    val inputColumnDSL: Map[String, ColumnDSL] = sampleDP.getColumnDSL("in", "profile")
-
-    val sinks: List[Sink[DataFrame]] = List(
-      SparkSink("dataFrame2", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1")),
-      SparkSink("preprocessDF", SparkWriter.avro.save("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2"))
-    )
-
-    Production.e2eFlowWithExpectations(sources, udfs, transformations, inputColumnDSL).foldMap[SparkFlow](sparkFlowInterpreter).run(Map()).value._2
-
-    val expectedSchema1 = List(
-      StructField("Common_DataPartnerID", IntegerType, true),
-      StructField("DeviceId", StringType, true),
-      StructField("Demographic_Country", StringType, true),
-      StructField("Common_TS", StringType, true),
-      StructField("newCol", StringType, true)
-    )
-
-    val expectedDataFrame1 = spark.createDataFrame(
-      spark.sparkContext.parallelize(Seq(
-        Row(1,"1","India","1504679559","abc"),
-        Row(1,"2","India","1504679359","abc"),
-        Row(1,"3","Spain","1504679459","abc"),
-        Row(1,"4","India","1504679659","abc")
-      )),
-      StructType(expectedSchema1)
-    )
-
-    val expectedSchema2 = List(
-      StructField("Common_DataPartnerID", IntegerType, true),
-      StructField("DeviceId", StringType, true),
-      StructField("Demographic_Country", StringType, true),
-      StructField("Common_TS", StringType, true),
-      StructField("newCol", StringType, true),
-      StructField("newCol2", StringType, true)
-    )
-
-    val expectedDataFrame2 = spark.createDataFrame(
-      spark.sparkContext.parallelize(Seq(
-        Row(1,"1","India","1504679559","abc", "abc_sampleValue"),
-        Row(1,"2","India","1504679359","abc", "abc_sampleValue"),
-        Row(1,"3","Spain","1504679459","abc", "abc_sampleValue"),
-        Row(1,"4","India","1504679659","abc", "abc_sampleValue")
-      )),
-      StructType(expectedSchema2)
-    )
-
-    val actualDataFrame1 = spark.read.format("avro").load("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path1")
-    val actualDataFrame2 = spark.read.format("avro").load("src/test/resources/custom-output-format/yr=2021/mon=08/dt=19/path2")
-
-    assertDataFrameEquality(expectedDataFrame1, actualDataFrame1, "DeviceId")
-    assertDataFrameEquality(expectedDataFrame2, actualDataFrame2, "DeviceId")
-
-  }*/
-
+  }
 }
