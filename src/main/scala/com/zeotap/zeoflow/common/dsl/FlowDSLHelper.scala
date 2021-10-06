@@ -18,6 +18,6 @@ object FlowDSLHelper {
 
   def writeToSinks[A](sinks: List[Sink[A]]): FreeFlowDSL[A] = liftF(WriteToSinks(sinks))
 
-  def runColumnExpectation[A](columnDSL: Map[String, Array[(ColumnExpectation, Boolean)]]): FreeFlowDSL[A] = liftF(FetchColumnExpectation(columnDSL))
+  def runColumnExpectation[A](columnDSL: Map[String, ColumnDSL]): FreeFlowDSL[A] = liftF(FetchColumnExpectation(columnDSL))
 
 }

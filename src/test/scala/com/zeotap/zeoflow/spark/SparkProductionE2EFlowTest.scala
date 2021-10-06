@@ -1,17 +1,14 @@
 package com.zeotap.zeoflow.spark
 
-import cats.Id
-import cats.data.Chain
 import com.holdenkarau.spark.testing.DataFrameSuiteBase
 import com.zeotap.data.io.sink.spark.writer.SparkWriter
 import com.zeotap.data.io.source.spark.loader.SparkLoader
-import com.zeotap.expectations.column.dsl.ColumnExpectation
+import com.zeotap.expectations.column.dsl.{ColumnDSL, ColumnExpectation}
 import com.zeotap.expectations.column.helper.ColumnExpectationUtils.ColumnExpectationOps
-import com.zeotap.expectations.data.dsl.DataExpectation.{ExpectationResult, IndividualResult}
+import com.zeotap.expectations.data.dsl.DataExpectation.ExpectationResult
 import com.zeotap.zeoflow.common.constructs.Production
 import com.zeotap.zeoflow.common.dsl.FlowDSLHelper.runColumnExpectation
-import com.zeotap.zeoflow.common.flowexpectations.assertExpectationsUtils.validateOutputDataExpectations
-import com.zeotap.zeoflow.common.test.helpers.DataFrameUtils.assertDataFrameEquality
+import com.zeotap.zeoflow.common.test.helpers.DataFrameUtils._
 import com.zeotap.zeoflow.common.types.{FlowUDF, Sink, Source, Transformation}
 import com.zeotap.zeoflow.spark.interpreters.SparkInterpreters._
 import com.zeotap.zeoflow.spark.test.processor.TestProcessor2
@@ -241,20 +238,24 @@ class SparkProductionE2EFlowTest extends FunSuite with DataFrameSuiteBase with B
         Row("2021-07-30","Motril","IAB1_2,IAB19","Female","18","24", "1627409640", "DEU"),
         Row("2021-08-11","Paris","IAB6,IAB1_2","Male","25","34", "1628623500", "GBR"),
         Row("2021-07-30","Motril", null, "Female","18","24", "1627409640", "DEU"),
-        Row("2020-05-13","Martos","IAB6","Male","35","44", "1628623500", "ESP")
+        Row("2020-05-13","Martos","IAB6","Male","35","44", "1628623500", "ESP"),
+        Row("2020-05-13","Martos","IAB6","Male","35","44", "1628623500", "POL"),
+        Row("2020-05-13","Martos","IAB6","Male","35","44", "1628623500", "FIN"),
+        Row("2020-05-13","Martos","IAB6","Male","35","44", "1628623500", "SWE")
       )),
       StructType(sampleDataFrameSchema)
     )
 
-     val minAgeExpectation = Tuple2(ColumnExpectation("MinAge").addAgeExpectation().oneOf(List("18", "25", "35", "45", "55", "65")), false)
-     val maxAgeExpectation = Tuple2(ColumnExpectation("MaxAge").addAgeExpectation().oneOf(List("24", "34", "44", "54", "64", "99")), false)
-     val interestIABExpectation = Tuple2(ColumnExpectation("Interest_IAB_preprocess").addDynamicColumnExpectation(), false)
-     val genderExpectation = Tuple2(ColumnExpectation("Gender").addGenderExpectation(List()).mayHaveNullLiteral, false)
-     val cityExpectation = Tuple2(ColumnExpectation("city").mayHaveNullLiteral, false)
-     val createdTsExpectation = Tuple2(ColumnExpectation("CREATED_TS_raw").hasValidLength(List(10)).addTimestampExpectation(), true)
-     val timestampExpectation = Tuple2(ColumnExpectation("timestamp").hasValidLength(List(10)).addTimestampExpectation(), false)
+     val minAgeExpectation: ColumnExpectation = ColumnExpectation("MinAge").addAgeExpectation().oneOf(List("18", "25", "35", "45", "55", "65"))
+     val maxAgeExpectation: ColumnExpectation = ColumnExpectation("MaxAge").addAgeExpectation().oneOf(List("24", "34", "44", "54", "64", "99"))
+     val interestIABExpectation: ColumnExpectation = ColumnExpectation("Interest_IAB_preprocess").addDynamicColumnExpectation()
+     val genderExpectation: ColumnExpectation = ColumnExpectation("Gender").addGenderExpectation(List()).mayHaveNullLiteral
+     val cityExpectation: ColumnExpectation = ColumnExpectation("city").mayHaveNullLiteral
+     val createdTsExpectation: ColumnExpectation = ColumnExpectation("CREATED_TS_raw").hasValidLength(List(10)).addTimestampExpectation()
+     val timestampExpectation: ColumnExpectation = ColumnExpectation("timestamp").hasValidLength(List(10)).addTimestampExpectation()
+     val countryExpectation:ColumnExpectation = ColumnExpectation("country_code_iso3").hasValidLength(List(3)).oneOf(List("FRA", "GBR", "ESP", "DEU")).noneOf(List("FIN", "SWE", "POL")).addMandatoryColumnExpectation()
 
-     val sampleDataPartner_output_data_expectation: Array[(ColumnExpectation, Boolean)] = Array(
+     val sampleDataPartner_output_data_expectation: Array[ColumnExpectation] = Array(
        timestampExpectation,
        cityExpectation,
        interestIABExpectation,
@@ -262,13 +263,12 @@ class SparkProductionE2EFlowTest extends FunSuite with DataFrameSuiteBase with B
        minAgeExpectation,
        maxAgeExpectation,
        createdTsExpectation,
-       Tuple2(ColumnExpectation("country_code_iso3").hasValidLength(List(3)).oneOf(List("FRA", "GBR", "ESP", "DEU")).addMandatoryColumnExpectation(), true)
+       countryExpectation
      )
 
-     val inputDataFrame: Map[String, DataFrame] = Map("finalDF" -> sampleDataFrame)
-     val inputColumnDSL: Map[String, Array[(ColumnExpectation, Boolean)]] = Map("finalDF" -> sampleDataPartner_output_data_expectation)
-
-    val actualOutput: Map[String, (DataFrame, Map[String, ExpectationResult])] = runColumnExpectation(inputColumnDSL).foldMap[SparkFlow](sparkFlowInterpreter).run(inputDataFrame).value._2.asInstanceOf[Map[String, (DataFrame, Map[String, ExpectationResult])]]
+     val inputDataFrame: Map[String, DataFrame] = Map("ResultTable" -> sampleDataFrame)
+     val inputColumnDSL: Map[String, ColumnDSL] = collectResults(List("ResultTable"), List(sampleDataPartner_output_data_expectation))
+     val actualOutput = runColumnExpectation(inputColumnDSL).foldMap[SparkFlow](sparkFlowInterpreter).run(inputDataFrame).value._2.asInstanceOf[Map[String, Map[String, ExpectationResult]]]
 
      assertTrue(validateOutputDataExpectations(actualOutput))
 

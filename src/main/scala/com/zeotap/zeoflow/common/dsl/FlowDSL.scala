@@ -15,6 +15,6 @@ object FlowDSL {
 
   final case class WriteToSinks[A](sinks: List[Sink[A]]) extends FlowDSL[A]
 
-  final case class FetchColumnExpectation[A](columnDSL: Map[String, Array[(ColumnExpectation, Boolean)]]) extends FlowDSL[A]
+  final case class FetchColumnExpectation[A](columnDSL: Map[String, ColumnDSL]) extends FlowDSL[A]
 
 }

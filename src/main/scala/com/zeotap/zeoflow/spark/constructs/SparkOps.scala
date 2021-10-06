@@ -22,20 +22,11 @@ object SparkOps {
 
     def writeToSinks(inputTables: Map[String, DataFrame], sinks: List[Sink[DataFrame]]): Unit = sinks.foreach(sink => sink.write(inputTables))
 
-    def runColumnExpectation(inputTables: Map[String, DataFrame],
-                             columnDSL: Map[String, Array[(ColumnExpectation, Boolean)]]): Map[String, (DataFrame, Map[String, ExpectationResult])] = {
+    def runColumnExpectation(inputTables: Map[String, DataFrame], columnDSL: Map[String, ColumnDSL]): Map[String, Map[String, ExpectationResult]] = {
+      require(columnDSL.keySet.subsetOf(inputTables.keySet), "Input tables must contain column DSL tables. Please verify DP Definition and DP base config")
 
-      val getConsolidatedColumnDSL = columnDSL.foldLeft(Map.empty: Map[String, ColumnDSL])((accMap, dsl) => {
-        accMap ++ Map(dsl._1 -> ColumnDSL(dsl._2.map(_._1): _*))
-      })
-      val columnDSLVerification = SparkContextExt(inputTables).validateColumnDSL(getConsolidatedColumnDSL)
-
-      val columnExpectationResult = inputTables.foldLeft(Map.empty: Map[String, (DataFrame, Map[String, ExpectationResult])])((accMap, table) => {
-        if (true.equals(columnDSLVerification(table._1)))
-          accMap ++ Map(table._1 -> (inputTables(table._1), getConsolidatedColumnDSL(table._1).runOnSpark(inputTables(table._1))))
-        else accMap ++ Map()
-      })
-      columnExpectationResult
+      columnDSL.foldLeft(Map.empty: Map[String, Map[String, ExpectationResult]])((accMap, columnDSL) =>
+        accMap ++ Map(columnDSL._1 -> columnDSL._2.runOnSpark(inputTables(columnDSL._1))))
     }
   }
 
