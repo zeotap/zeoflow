@@ -29,7 +29,7 @@ object Production {
       _ <- loadSources[A](sources)
       _ <- loadUserDefinedFunctions[B](udfs)
       _ <- runTransformations[A](transformations)
-      expectationResult <- runColumnExpectation[Map[String, Map[String, ExpectationResult]]](columnDSL)
+      expectationResult <- assertExpectation[Map[String, Map[String, ExpectationResult]]](columnDSL)
     } yield expectationResult
   }
 

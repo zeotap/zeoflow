@@ -7,7 +7,7 @@ import com.zeotap.expectations.column.dsl.{ColumnDSL, ColumnExpectation}
 import com.zeotap.expectations.column.helper.ColumnExpectationUtils.ColumnExpectationOps
 import com.zeotap.expectations.data.dsl.DataExpectation.ExpectationResult
 import com.zeotap.zeoflow.common.constructs.Production
-import com.zeotap.zeoflow.common.dsl.FlowDSLHelper.runColumnExpectation
+import com.zeotap.zeoflow.common.dsl.FlowDSLHelper.assertExpectation
 import com.zeotap.zeoflow.common.test.helpers.DataFrameUtils._
 import com.zeotap.zeoflow.common.types.{FlowUDF, Sink, Source, Transformation}
 import com.zeotap.zeoflow.spark.interpreters.SparkInterpreters._
@@ -269,7 +269,7 @@ class SparkProductionE2EFlowTest extends FunSuite with DataFrameSuiteBase with B
 
      val inputDataFrame: Map[String, DataFrame] = Map("OutputTable" -> sampleDataFrame)
      val inputColumnDSL: Map[String, ColumnDSL] = Map("OutputTable" -> ColumnDSL(sampleDataPartner_output_data_expectation: _*))
-     val actualOutput = runColumnExpectation(inputColumnDSL)
+     val actualOutput = assertExpectation(inputColumnDSL)
                         .foldMap[SparkFlow](sparkFlowInterpreter)
                         .run(inputDataFrame).value._2
                         .asInstanceOf[Map[String, Map[String, ExpectationResult]]]
