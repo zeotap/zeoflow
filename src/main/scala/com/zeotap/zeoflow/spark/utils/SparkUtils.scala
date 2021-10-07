@@ -1,6 +1,5 @@
 package com.zeotap.zeoflow.spark.utils
 
-import com.zeotap.expectations.column.dsl.ColumnDSL
 import org.apache.spark.sql.DataFrame
 
 object SparkUtils {
