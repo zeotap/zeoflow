@@ -14,5 +14,4 @@ object DataFrameUtils extends FunSuite with DataFrameSuiteBase {
     assertDataFrameEquals(expectedDf.select(expectedColumns : _*).distinct.orderBy(sortColumn),
       actualDf.select(actualColumns : _*).distinct.orderBy(sortColumn))
   }
-
 }

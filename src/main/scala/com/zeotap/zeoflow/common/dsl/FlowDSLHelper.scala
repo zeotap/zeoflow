@@ -2,6 +2,7 @@ package com.zeotap.zeoflow.common.dsl
 
 import cats.free.Free
 import cats.free.Free.liftF
+import com.zeotap.expectations.column.dsl.{ColumnDSL, ColumnExpectation}
 import com.zeotap.zeoflow.common.dsl.FlowDSL._
 import com.zeotap.zeoflow.common.types.{FlowUDF, Sink, Source, Transformation}
 
@@ -16,5 +17,7 @@ object FlowDSLHelper {
   def runTransformations[A](transformations: List[Transformation[A]]): FreeFlowDSL[A] = liftF(RunTransformations(transformations))
 
   def writeToSinks[A](sinks: List[Sink[A]]): FreeFlowDSL[A] = liftF(WriteToSinks(sinks))
+
+  def assertExpectation[A](columnDSL: Map[String, ColumnDSL]): FreeFlowDSL[A] = liftF(AssertColumnExpectation(columnDSL))
 
 }

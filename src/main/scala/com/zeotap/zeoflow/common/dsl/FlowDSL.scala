@@ -1,5 +1,6 @@
 package com.zeotap.zeoflow.common.dsl
 
+import com.zeotap.expectations.column.dsl.ColumnDSL
 import com.zeotap.zeoflow.common.types.{FlowUDF, Sink, Source, Transformation}
 
 sealed trait FlowDSL[A]
@@ -13,5 +14,7 @@ object FlowDSL {
   final case class RunTransformations[A](transformations: List[Transformation[A]]) extends FlowDSL[A]
 
   final case class WriteToSinks[A](sinks: List[Sink[A]]) extends FlowDSL[A]
+
+  final case class AssertColumnExpectation[A](columnDSL: Map[String, ColumnDSL]) extends FlowDSL[A]
 
 }
