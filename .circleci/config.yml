@@ -13,7 +13,7 @@ jobs:
       - checkout
 
       - restore_cache:
-          key: source-{{ checksum "build.sbt" }}
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
 
       - run:
           name: Setup SBT
@@ -32,7 +32,7 @@ jobs:
             - ~/.sbt
             - ~/.m2/repository
             - ~/.ivy2
-          key: source-{{ checksum "build.sbt" }}
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
 
   release:
 
@@ -48,7 +48,7 @@ jobs:
 
       - add_ssh_keys:
           fingerprints:
-            - "e3:72:89:82:34:9a:c2:9f:89:9c:e4:07:93:9d:a2:34"
+            - "d7:f7:68:c9:1b:eb:87:90:e2:22:19:da:1d:79:32:55"
 
       - run:
           name: Configure git
@@ -56,7 +56,7 @@ jobs:
             git config user.name "Release Script"
             git config user.email "builds@zeotap.com"
       - restore_cache:
-          key: source-{{ checksum "build.sbt" }}
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
 
       - run:
           name: Setup SBT
@@ -88,7 +88,7 @@ jobs:
             - ~/.sbt
             - ~/.m2/repository
             - ~/.ivy2
-          key: source-{{ checksum "build.sbt" }}
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
 
   buildonly:
 
@@ -103,7 +103,7 @@ jobs:
       - checkout
 
       - restore_cache:
-          key: source-{{ checksum "build.sbt" }}
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
 
       - run:
           name: Setup SBT
@@ -122,7 +122,7 @@ jobs:
             - ~/.sbt
             - ~/.m2/repository
             - ~/.ivy2
-          key: source-{{ checksum "build.sbt" }}
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
 
 workflows:
   version: 2
