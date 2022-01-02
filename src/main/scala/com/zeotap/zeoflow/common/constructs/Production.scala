@@ -1,10 +1,9 @@
 package com.zeotap.zeoflow.common.constructs
 
-import com.zeotap.expectations.column.dsl.{ColumnDSL, ColumnExpectation}
+import com.zeotap.expectations.column.dsl.ColumnDSL
 import com.zeotap.expectations.data.dsl.DataExpectation.ExpectationResult
 import com.zeotap.zeoflow.common.dsl.FlowDSLHelper._
 import com.zeotap.zeoflow.common.types.{FlowUDF, Sink, Source, Transformation}
-import org.apache.spark.sql.DataFrame
 
 object Production {
 
