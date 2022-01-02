@@ -6,20 +6,30 @@ scalaVersion := "2.11.12"
 
 import ReleaseTransformations._
 
+val sparkVersion = "2.4.3"
+val beamVersion = "2.33.0"
+
 libraryDependencies ++= Seq(
-  "com.zeotap" % "cloud-storage-utils" % "1.0.0",
-  "mysql" % "mysql-connector-java" % "8.0.26",
-  "org.apache.commons" % "commons-text" % "1.6",
-  "org.postgresql" % "postgresql" % "42.2.11",
-  "org.scala-lang" % "scala-library" % "2.11.12",
+  "com.fasterxml.jackson.module" % "jackson-module-paranamer" % "2.12.1",
+  "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.12.1",
   "com.google.cloud.spark" %% "spark-bigquery-with-dependencies" % "0.21.1",
   "com.holdenkarau" %% "spark-testing-base" % "2.4.3_0.12.0",
-  "com.zeotap" %% "data-io" % "1.0",
+  "com.zeotap" % "cloud-storage-utils" % "1.0.0",
   "com.zeotap" %% "data-expectations" % "1.2",
-  "org.apache.spark" %% "spark-avro" % "2.4.3",
-  "org.apache.spark" %% "spark-core" % "2.4.3",
-  "org.apache.spark" %% "spark-hive" % "2.4.3",
-  "org.apache.spark" %% "spark-sql" % "2.4.3",
+  "com.zeotap" %% "data-io" % "1.1-SNAPSHOT",
+  "mysql" % "mysql-connector-java" % "8.0.26",
+  "org.apache.beam" % "beam-runners-direct-java" % beamVersion,
+  "org.apache.beam" % "beam-sdks-java-core" % beamVersion,
+  "org.apache.beam" % "beam-sdks-java-extensions-sql" % beamVersion,
+  "org.apache.beam" % "beam-sdks-java-io-jdbc" % beamVersion,
+  "org.apache.beam" % "beam-sdks-java-io-parquet" % beamVersion,
+  "org.apache.commons" % "commons-text" % "1.6",
+  "org.apache.spark" %% "spark-avro" % sparkVersion,
+  "org.apache.spark" %% "spark-core" % sparkVersion,
+  "org.apache.spark" %% "spark-hive" % sparkVersion,
+  "org.apache.spark" %% "spark-sql" % sparkVersion,
+  "org.postgresql" % "postgresql" % "42.2.11",
+  "org.scala-lang" % "scala-library" % "2.11.12",
   "org.typelevel" %% "cats-core" % "2.0.0",
   "org.typelevel" %% "cats-free" % "2.0.0",
   "org.mockito" % "mockito-core" % "2.8.9" % Test,
