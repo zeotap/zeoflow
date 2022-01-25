@@ -132,7 +132,7 @@ workflows:
           context: Q3-2020
           filters:
             branches:
-              only: /^(development)$/
+              only: /^(development|temp)$/
       - release:
           context: Q3-2020
           filters:
@@ -142,4 +142,4 @@ workflows:
           context: Q3-2020
           filters:
             branches:
-              ignore: /^(development|master)$/
+              ignore: /^(development|master|temp)$/
