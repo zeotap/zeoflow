@@ -1,5 +1,7 @@
 # Zeoflow
 
+[![Join the chat at https://gitter.im/zeotap/zeoflow](https://badges.gitter.im/zeotap/zeoflow.svg)](https://gitter.im/zeotap/zeoflow?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 ### A Free based DSL that models the high-level architecture of data transformation workflows
 
 ## Why
