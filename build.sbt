@@ -2,20 +2,20 @@ name := "zeoflow"
 
 organization := "com.zeotap"
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.12.14"
 
 import ReleaseTransformations._
 
-val sparkVersion = "2.4.3"
+val sparkVersion = "3.1.2"
 val beamVersion = "2.33.0"
 
 libraryDependencies ++= Seq(
   "com.fasterxml.jackson.module" % "jackson-module-paranamer" % "2.12.1",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.12.1",
   "com.google.cloud.spark" %% "spark-bigquery-with-dependencies" % "0.21.1",
-  "com.zeotap" %% "spark-property-tests" % "2.4.3",
-  "com.zeotap" %% "data-expectations" % "1.2",
-  "com.zeotap" %% "data-io" % "1.1-SNAPSHOT",
+  "com.zeotap" %% "spark-property-tests" % "3.1.2",
+  "com.zeotap" % "data-expectations_2.12" % "3.1.2_SNAPSHOT",
+  "com.zeotap" % "data-io_2.12" % "2.0.1",
   "mysql" % "mysql-connector-java" % "8.0.26",
   "org.apache.beam" % "beam-runners-direct-java" % beamVersion,
   "org.apache.beam" % "beam-sdks-java-core" % beamVersion,
@@ -28,7 +28,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-hive" % sparkVersion,
   "org.apache.spark" %% "spark-sql" % sparkVersion,
   "org.postgresql" % "postgresql" % "42.2.11",
-  "org.scala-lang" % "scala-library" % "2.11.12",
+  "org.scala-lang" % "scala-library" % "2.12.14",
   "org.typelevel" %% "cats-core" % "2.0.0",
   "org.typelevel" %% "cats-free" % "2.0.0",
   "org.mockito" % "mockito-core" % "2.8.9" % Test,
@@ -61,6 +61,9 @@ releaseProcess := Seq[ReleaseStep](
 )
 
 credentials += Credentials(new File(Path.userHome.absolutePath + "/.sbt/.credentials"))
+
+resolvers += "Artifactory Release" at "https://zeotap.jfrog.io/zeotap/libs-release"
+resolvers += "Artifactory Snapshot" at "https://zeotap.jfrog.io/zeotap/libs-snapshot"
 
 publishTo := {
   val nexus = "https://zeotap.jfrog.io/zeotap/"
