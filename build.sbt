@@ -40,12 +40,23 @@ libraryDependencies ++= Seq(
   "org.testcontainers" % "postgresql" % "1.16.0" % Test
 
 )
-
 fork in Test := true
 
 javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSClassUnloadingEnabled")
 
 parallelExecution in Test := false
+
+credentials += Credentials(new File(Path.userHome.absolutePath + "/.sbt/.credentials"))
+
+publishTo := {
+  val nexus = "https://zeotap.jfrog.io/zeotap/"
+  if (isSnapshot.value)
+    Some("snapshots" at nexus + "libs-snapshot-local")
+  else
+    Some("releases"  at nexus + "libs-release-local")
+}
+
+publishConfiguration := publishConfiguration.value.withOverwrite(true)
 
 releaseTagComment    := s" Releasing ${(version in ThisBuild).value}"
 releaseCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}"
@@ -63,3 +74,26 @@ releaseProcess := Seq[ReleaseStep](
   setNextVersion,
   commitNextVersion
 )
+
+//fork in Test := true
+//
+//javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSClassUnloadingEnabled")
+//
+//parallelExecution in Test := false
+//
+//releaseTagComment    := s" Releasing ${(version in ThisBuild).value}"
+//releaseCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}"
+//releaseNextCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}"
+//
+//releaseProcess := Seq[ReleaseStep](
+//  checkSnapshotDependencies,
+//  inquireVersions,
+//  runClean,
+//  runTest,
+//  setReleaseVersion,
+//  commitReleaseVersion,
+//  tagRelease,
+//  publishArtifacts,
+//  setNextVersion,
+//  commitNextVersion
+//)
