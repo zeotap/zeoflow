@@ -9,13 +9,17 @@ import ReleaseTransformations._
 val sparkVersion = "3.1.2"
 val beamVersion = "2.33.0"
 
+resolvers += "central" at "https://zeotap.jfrog.io/zeotap/libs-release"
+resolvers += "snapshot" at "https://zeotap.jfrog.io/zeotap/libs-snapshot"
+credentials += Credentials(new File(Path.userHome.absolutePath + "/.sbt/.credentials"))
+
 libraryDependencies ++= Seq(
   "com.fasterxml.jackson.module" % "jackson-module-paranamer" % "2.12.1",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.12.1",
   "com.google.cloud.spark" %% "spark-bigquery-with-dependencies" % "0.21.1",
   "com.zeotap" %% "spark-property-tests" % "3.1.2",
-  "com.zeotap" %% "data-expectations" % "1.3-SNAPSHOT",
-  "com.zeotap" %% "data-io" % "1.1",
+  "com.zeotap" %% "data-expectations" % "3.1.2_SNAPSHOT",
+  "com.zeotap" %% "data-io" % "2.0.1",
   "mysql" % "mysql-connector-java" % "8.0.26",
   "org.apache.beam" % "beam-runners-direct-java" % beamVersion,
   "org.apache.beam" % "beam-sdks-java-core" % beamVersion,
