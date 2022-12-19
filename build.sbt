@@ -50,7 +50,10 @@ credentials += Credentials(new File(Path.userHome.absolutePath + "/.sbt/.credent
 
 publishTo := {
   val nexus = "https://zeotap.jfrog.io/zeotap/"
-  Some("snapshots" at nexus + "libs-snapshot-local")
+  if (isSnapshot.value)
+    Some("snapshots" at nexus + "libs-snapshot-local")
+  else
+    Some("releases"  at nexus + "libs-release-local")
 }
 
 publishConfiguration := publishConfiguration.value.withOverwrite(true)
