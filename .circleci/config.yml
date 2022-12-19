@@ -138,12 +138,12 @@ workflows:
           context: Q3-2020
           filters:
             branches:
-              only: /^(development|Akhilesh/Spark_3.1.2_jfrog)$/
+              only: /^(development|jfrog-spark-3)$/
       - release:
           context: Q3-2020
           filters:
             branches:
-              only: /^(master)$/
+              only: /^master$/
       - buildonly:
           context: Q3-2020
           filters:
