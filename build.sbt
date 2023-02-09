@@ -59,3 +59,19 @@ releaseProcess := Seq[ReleaseStep](
   setNextVersion,
   commitNextVersion
 )
+
+credentials += Credentials(new File(Path.userHome.absolutePath + "/.sbt/.credentials"))
+
+publishTo := {
+  val nexus = "https://zeotap.jfrog.io/zeotap/"
+  if (isSnapshot.value)
+    Some("snapshots" at nexus + "libs-snapshot-local")
+  else
+    Some("releases"  at nexus + "libs-release-local")
+}
+
+publishConfiguration := publishConfiguration.value.withOverwrite(true)
+
+releaseTagComment    := s" Releasing ${(version in ThisBuild).value}"
+releaseCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}"
+releaseNextCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}"
