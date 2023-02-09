@@ -1,0 +1,147 @@
+jobs:
+
+  snapshot:
+
+    working_directory: ~/project
+
+    machine:
+      image: ubuntu-2004:202201-02
+      resource_class: large
+
+    steps:
+
+      - checkout
+
+      - restore_cache:
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
+
+      - run:
+          name: Setup SBT
+          command: |
+            mkdir -p ~/.sbt
+            echo "realm=Artifactory Realm" > ~/.sbt/.credentials
+            echo "host=zeotap.jfrog.io" >> ~/.sbt/.credentials
+            echo "user=$MAVEN_USER" >> ~/.sbt/.credentials
+            echo "password=$MAVEN_PASSWORD" >> ~/.sbt/.credentials
+      - run:
+          name: Package the Jar
+          command: |
+            sudo update-alternatives --set java /usr/lib/jvm/java-8-openjdk-amd64/jre/bin/java
+            java -version
+            sbt clean test publish
+      - save_cache:
+          paths:
+            - ~/.sbt
+            - ~/.m2/repository
+            - ~/.ivy2
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
+
+  release:
+
+    working_directory: ~/project
+
+    machine:
+      image: ubuntu-2004:202201-02
+      resource_class: large
+
+    steps:
+
+      - checkout
+
+      - add_ssh_keys:
+          fingerprints:
+            - "d7:f7:68:c9:1b:eb:87:90:e2:22:19:da:1d:79:32:55"
+
+      - run:
+          name: Configure git
+          command: |
+            git config user.name "Release Script"
+            git config user.email "builds@zeotap.com"
+      - restore_cache:
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
+
+      - run:
+          name: Setup SBT
+          command: |
+            mkdir -p ~/.sbt
+            echo "realm=Artifactory Realm" > ~/.sbt/.credentials
+            echo "host=zeotap.jfrog.io" >> ~/.sbt/.credentials
+            echo "user=$MAVEN_USER" >> ~/.sbt/.credentials
+            echo "password=$MAVEN_PASSWORD" >> ~/.sbt/.credentials
+      - run:
+          name: Package the Jar
+          command: |
+            if grep -Fq "SNAPSHOT" version.sbt
+            then
+              sbt 'release with-defaults'
+              sleep 5
+              GIT_COMMITTER_DATE="$(date)" git commit --amend --no-edit --date "$(date)"
+              git checkout development
+              git rebase master
+              git push origin development -f
+              git checkout master
+              git reset --hard HEAD~1
+              git push origin master --tags
+            else
+              sbt clean test publish
+            fi
+      - save_cache:
+          paths:
+            - ~/.sbt
+            - ~/.m2/repository
+            - ~/.ivy2
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
+
+  buildonly:
+
+    working_directory: ~/project
+
+    machine:
+      image: ubuntu-2004:202201-02
+      resource_class: large
+
+    steps:
+
+      - checkout
+
+      - restore_cache:
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
+
+      - run:
+          name: Setup SBT
+          command: |
+            mkdir -p ~/.sbt
+            echo "realm=Artifactory Realm" > ~/.sbt/.credentials
+            echo "host=zeotap.jfrog.io" >> ~/.sbt/.credentials
+            echo "user=$MAVEN_USER" >> ~/.sbt/.credentials
+            echo "password=$MAVEN_PASSWORD" >> ~/.sbt/.credentials
+      - run:
+          name: Package the Jar
+          command: |
+            sbt clean test package
+      - save_cache:
+          paths:
+            - ~/.sbt
+            - ~/.m2/repository
+            - ~/.ivy2
+          key: source-{{ .Environment.CACHE_VERSION }}-{{ checksum "build.sbt" }}
+
+workflows:
+  version: 2
+  build-and-deploy:
+    jobs:
+      - snapshot:
+          context: Q3-2020
+          filters:
+            branches:
+              only: /^(development|zeotap-development|zeotap-development-shoubhik)$/
+      - release:
+          context: Q3-2020
+          filters:
+            branches:
+              only: /^master$/
+      - buildonly:
+          context: Q3-2020
+          filters:
+            branches:
+              ignore: /^(development|master|zeotap-development|zeotap-development-shoubhik)$/
