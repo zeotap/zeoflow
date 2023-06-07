@@ -34,7 +34,6 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "2.8.9" % Test,
   "org.testcontainers" % "mysql" % "1.16.0" % Test,
   "org.testcontainers" % "postgresql" % "1.16.0" % Test
-
 )
 
 fork in Test := true
