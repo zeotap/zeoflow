@@ -143,7 +143,7 @@ workflows:
           context: Q3-2020
           filters:
             branches:
-              only: /^(master)$/
+              only: /^(master|zeoflow-spark-3-kushagra)$/
       - buildonly:
           context: Q3-2020
           filters:
