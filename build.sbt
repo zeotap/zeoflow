@@ -6,7 +6,7 @@ scalaVersion := "2.11.12"
 
 import ReleaseTransformations._
 
-val sparkVersion = "2.4.3"
+val sparkVersion = System.getenv("SPARK_VERSION")
 val beamVersion = "2.33.0"
 
 resolvers += "central" at "https://zeotap.jfrog.io/zeotap/libs-release"
@@ -17,9 +17,9 @@ libraryDependencies ++= Seq(
   "com.fasterxml.jackson.module" % "jackson-module-paranamer" % "2.12.1",
   "com.fasterxml.jackson.module" %% "jackson-module-scala" % "2.12.1",
   "com.google.cloud.spark" %% "spark-bigquery-with-dependencies" % "0.21.1",
-  "com.zeotap" %% "spark-property-tests" % "2.4.3",
-  "com.zeotap" %% "data-expectations" % "1.2",
-  "com.zeotap" %% "data-io" % "1.2.0",
+  "com.zeotap" %% "spark-property-tests" % sparkVersion,
+  "com.zeotap" %% "data-expectations" % sparkVersion,
+  "com.zeotap" %% "data-io" % s"${sparkVersion}_2.0.0",
   "mysql" % "mysql-connector-java" % "8.0.26",
   "org.apache.beam" % "beam-runners-direct-java" % beamVersion,
   "org.apache.beam" % "beam-sdks-java-core" % beamVersion,
@@ -38,6 +38,10 @@ libraryDependencies ++= Seq(
   "org.mockito" % "mockito-core" % "2.8.9" % Test,
   "org.testcontainers" % "mysql" % "1.16.0" % Test,
   "org.testcontainers" % "postgresql" % "1.16.0" % Test
+)
+
+dependencyOverrides ++= Seq(
+  "org.scalatest" %% "scalatest" % "3.0.9"
 )
 
 fork in Test := true
