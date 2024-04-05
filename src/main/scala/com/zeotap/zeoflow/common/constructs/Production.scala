@@ -19,6 +19,15 @@ object Production {
     } yield Unit
   }
 
+  def e2eFlowWithMapOfDataFrames[A, B](sources: List[Source[A]], udfs: List[FlowUDF[B]] = List(),
+                          transformations: List[Transformation[A]]): FreeFlowDSL[A] = {
+    for {
+      _ <- loadSources[A](sources)
+      _ <- loadUserDefinedFunctions[B](udfs)
+      mapOfDataFrames <- runTransformations[A](transformations)
+    } yield mapOfDataFrames
+  }
+
   def e2eFlowWithExpectations[A, B](sources: List[Source[A]],
                                   udfs: List[FlowUDF[B]] = List(),
                                   transformations: List[Transformation[A]],
