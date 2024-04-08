@@ -2,16 +2,12 @@ name := "zeoflow"
 
 organization := "com.zeotap"
 
-scalaVersion := "2.11.12"
+scalaVersion := "2.12.14"
 
 import ReleaseTransformations._
 
-val sparkVersion = System.getenv("SPARK_VERSION")
+val sparkVersion = "3.3.1"
 val beamVersion = "2.33.0"
-
-resolvers += "central" at "https://zeotap.jfrog.io/zeotap/libs-release"
-resolvers += "snapshot" at "https://zeotap.jfrog.io/zeotap/libs-snapshot"
-credentials += Credentials(new File(Path.userHome.absolutePath + "/.sbt/.credentials"))
 
 libraryDependencies ++= Seq(
   "com.fasterxml.jackson.module" % "jackson-module-paranamer" % "2.12.1",
@@ -32,7 +28,7 @@ libraryDependencies ++= Seq(
   "org.apache.spark" %% "spark-hive" % sparkVersion,
   "org.apache.spark" %% "spark-sql" % sparkVersion,
   "org.postgresql" % "postgresql" % "42.2.11",
-  "org.scala-lang" % "scala-library" % "2.11.12",
+  "org.scala-lang" % "scala-library" % "2.12.14",
   "org.typelevel" %% "cats-core" % "2.0.0",
   "org.typelevel" %% "cats-free" % "2.0.0",
   "org.mockito" % "mockito-core" % "2.8.9" % Test,
@@ -50,18 +46,6 @@ javaOptions ++= Seq("-Xms512M", "-Xmx2048M", "-XX:MaxPermSize=2048M", "-XX:+CMSC
 
 parallelExecution in Test := false
 
-credentials += Credentials(new File(Path.userHome.absolutePath + "/.sbt/.credentials"))
-
-publishTo := {
-  val nexus = "https://zeotap.jfrog.io/zeotap/"
-  if (isSnapshot.value)
-    Some("snapshots" at nexus + "libs-snapshot-local")
-  else
-    Some("releases"  at nexus + "libs-release-local")
-}
-
-publishConfiguration := publishConfiguration.value.withOverwrite(true)
-
 releaseTagComment    := s" Releasing ${(version in ThisBuild).value}"
 releaseCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}"
 releaseNextCommitMessage := s"[skip ci] Setting version to ${(version in ThisBuild).value}"
@@ -78,3 +62,18 @@ releaseProcess := Seq[ReleaseStep](
   setNextVersion,
   commitNextVersion
 )
+
+credentials += Credentials(new File(Path.userHome.absolutePath + "/.sbt/.credentials"))
+
+resolvers += "central" at "https://zeotap.jfrog.io/zeotap/libs-release"
+resolvers += "snapshot" at "https://zeotap.jfrog.io/zeotap/libs-snapshot"
+
+publishTo := {
+  val nexus = "https://zeotap.jfrog.io/zeotap/"
+  if (isSnapshot.value)
+    Some("snapshots" at nexus + "libs-snapshot-local")
+  else
+    Some("releases"  at nexus + "libs-release-local")
+}
+
+publishConfiguration := publishConfiguration.value.withOverwrite(true)
