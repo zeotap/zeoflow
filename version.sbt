@@ -1,1 +1,1 @@
-ThisBuild / version := "1.1"
+ThisBuild / version := sys.env("SPARK_VERSION").asInstanceOf[String] + "_2.0"
